@@ -5,7 +5,7 @@ option go_package = "github.com/yarinBenisty/birthday-service/proto/birthday.pro
 package birthday;
 
 
-enum Request {
+enum Requests {
     POST = 0;
     GET = 1;
     PUT = 2;
