@@ -10,8 +10,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type server struct{}
-
 func main() {
 	addr := "mongodb://root:example@0.0.0.0:27017"
 
