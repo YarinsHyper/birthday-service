@@ -23,7 +23,7 @@ service BirthdayFunctions {
     rpc UpdateBirthday(UpdateBirthdayRequest) returns (BirthdayObject) {}
 
     //DeleteBirthday deletes the selected birthday.
-    rpc DeleteBirthday(DeleteBirthdayRequest) returns (BirthdayObject) {}
+    rpc DeleteBirthday(DeleteBirthdayRequest) returns (DeleteBirthdayResponse) {}
 
 }
 
@@ -36,6 +36,10 @@ message CreateBirthdayRequest {
 
     //the identification number of the person
     string personalNumber = 3;
+}
+
+message DeleteBirthdayResponse{
+
 }
 
 message GetBirthdayRequest {

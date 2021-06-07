@@ -25,7 +25,7 @@ type BirthdayFunctionsClient interface {
 	//UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(ctx context.Context, in *UpdateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	//DeleteBirthday deletes the selected birthday.
-	DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
+	DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*DeleteBirthdayResponse, error)
 }
 
 type birthdayFunctionsClient struct {
@@ -63,8 +63,8 @@ func (c *birthdayFunctionsClient) UpdateBirthday(ctx context.Context, in *Update
 	return out, nil
 }
 
-func (c *birthdayFunctionsClient) DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error) {
-	out := new(BirthdayObject)
+func (c *birthdayFunctionsClient) DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*DeleteBirthdayResponse, error) {
+	out := new(DeleteBirthdayResponse)
 	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/DeleteBirthday", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ type BirthdayFunctionsServer interface {
 	//UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error)
 	//DeleteBirthday deletes the selected birthday.
-	DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*BirthdayObject, error)
-	mustEmbedUnimplementedBirthdayFunctionsServer()
+	DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error)
+	// mustEmbedUnimplementedBirthdayFunctionsServer()
 }
 
 // UnimplementedBirthdayFunctionsServer must be embedded to have forward compatible implementations.
@@ -100,10 +100,10 @@ func (UnimplementedBirthdayFunctionsServer) GetBirthday(context.Context, *GetBir
 func (UnimplementedBirthdayFunctionsServer) UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBirthday not implemented")
 }
-func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*BirthdayObject, error) {
+func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBirthday not implemented")
 }
-func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
+// func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
 
 // UnsafeBirthdayFunctionsServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to BirthdayFunctionsServer will
