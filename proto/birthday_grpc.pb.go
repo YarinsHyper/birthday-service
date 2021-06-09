@@ -108,9 +108,9 @@ func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *Del
 // UnsafeBirthdayFunctionsServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to BirthdayFunctionsServer will
 // result in compilation errors.
-type UnsafeBirthdayFunctionsServer interface {
-	mustEmbedUnimplementedBirthdayFunctionsServer()
-}
+// type UnsafeBirthdayFunctionsServer interface {
+// 	mustEmbedUnimplementedBirthdayFunctionsServer()
+// }
 
 func RegisterBirthdayFunctionsServer(s grpc.ServiceRegistrar, srv BirthdayFunctionsServer) {
 	s.RegisterService(&BirthdayFunctions_ServiceDesc, srv)
@@ -213,5 +213,5 @@ var BirthdayFunctions_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/birthday.proto",
+	Metadata: "birthday.proto",
 }

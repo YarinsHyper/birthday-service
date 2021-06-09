@@ -19,6 +19,13 @@ type Service struct {
 	m                  *manager.Manager
 }
 
+type BirthdayStruct struct {
+	Name           string
+	Date           string
+	PersonalNumber string
+	ID             string `bson:"_id" json:"id,omitempty"`
+}
+
 func NewService(url string) *Service {
 	s := &Service{}
 	s.mongoConnection(url)
@@ -47,6 +54,16 @@ func (s *Service) mongoConnection(url string) {
 
 }
 
+func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
+	birthdayO := &pb.BirthdayObject{
+		Name:           bs.Name,
+		Date:           bs.Date,
+		PersonalNumber: bs.PersonalNumber,
+		ID:             bs.ID,
+	}
+	return birthdayO
+}
+
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
 	if err != nil {
@@ -66,7 +83,6 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 	database := client.Database("birthdayDB")
 	birthdayCollection := database.Collection("birthdays")
 
-	s.m = manager.NewManager(client.Database("birthdayDB"))
 	b := bson.M{
 		"name":           req.Name,
 		"date":           req.Date,
@@ -79,11 +95,13 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 	}
 
 	birthday := birthdayCollection.FindOne(ctx, bson.M{"_id": cursor.InsertedID})
-	BirthdayModel := &pb.BirthdayObject{}
+	BirthdayModel := &BirthdayStruct{}
 	birthday.Decode(BirthdayModel)
-	fmt.Println(BirthdayModel)
 
-	return BirthdayModel, nil
+	convertedBirthday := BirthdayModel.asBirthdayObject()
+	fmt.Println(convertedBirthday)
+
+	return convertedBirthday, nil
 }
 
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
@@ -105,7 +123,6 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	database := client.Database("birthdayDB")
 	birthdaysCollection := database.Collection("birthdays")
 
-	s.m = manager.NewManager(client.Database("birthdayDB"))
 	cursor, err := birthdaysCollection.Find(ctx, bson.M{})
 	if err != nil {
 		fmt.Println("error: ", err)
@@ -117,8 +134,14 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	}
 
 	for _, birthdays := range birthdays {
-		fmt.Println("{", "name:", birthdays["name"], ",date:", birthdays["date"], ",personalNumber:", birthdays["personalNumber"], ",id:", birthdays["_id"], "}")
+		fmt.Println(birthdays["name"], birthdays["date"], birthdays["personalNumber"], birthdays["_id"])
 	}
+	fmt.Println(birthdays)
+	// birthdayModel := &BirthdayStruct{}
+	// birthdays.Decode(birthdayModel)
+
+	// birthdays := &BirthdayStruct{}
+	// convertedBirthdays := birthdays.asBirthdayObject()
 
 	return &pb.BirthdayObject{}, nil
 }

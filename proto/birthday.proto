@@ -74,5 +74,5 @@ message BirthdayObject {
     string personalNumber = 3;
 
     //the unique id that's created for the person
-    string _id = 4;
+    string ID = 4;
 }
