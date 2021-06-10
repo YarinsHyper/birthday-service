@@ -19,7 +19,6 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-
 	fmt.Printf("birthday service running on port %d\n", 8000)
 
 	// connecting to mongodb

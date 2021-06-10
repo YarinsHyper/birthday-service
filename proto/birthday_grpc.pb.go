@@ -103,8 +103,8 @@ func (UnimplementedBirthdayFunctionsServer) UpdateBirthday(context.Context, *Upd
 func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBirthday not implemented")
 }
-// func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
 
+// func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
 // UnsafeBirthdayFunctionsServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to BirthdayFunctionsServer will
 // result in compilation errors.

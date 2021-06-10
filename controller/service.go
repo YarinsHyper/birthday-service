@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yarinBenisty/birthday-service/manager"
 	pb "github.com/yarinBenisty/birthday-service/proto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +15,6 @@ import (
 type Service struct {
 	Database           *mongo.Database
 	PodcastsCollection *mongo.Collection
-	m                  *manager.Manager
 }
 
 type BirthdayStruct struct {
@@ -51,7 +49,6 @@ func (s *Service) mongoConnection(url string) {
 
 	s.Database = client.Database("birthdayDB")
 	s.PodcastsCollection = s.Database.Collection("birthdays")
-
 }
 
 func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
@@ -82,7 +79,6 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 
 	database := client.Database("birthdayDB")
 	birthdayCollection := database.Collection("birthdays")
-
 	b := bson.M{
 		"name":           req.Name,
 		"date":           req.Date,
@@ -108,7 +104,9 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
 	if err != nil {
 		log.Fatal(err)
-
+	}
+	err = client.Connect(ctx)
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Disconnect(ctx)
@@ -150,18 +148,23 @@ func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequ
 
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"personalNumber", req.PersonalNumber}}
-	update := bson.D{{"$set", bson.D{{"name", req.Name}, {"date", req.Date}}}}
+	update := bson.D{{"$set", bson.D{{"name", req.Name}, {"date", req.Date}, {"personalNumber", req.PersonalNumber}}}}
 	result, err := birthdaysCollection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// BirthdayModel := &BirthdayStruct{}
-	// convertedBirthday := BirthdayModel.asBirthdayObject()
-	// fmt.Println(convertedBirthday)
+	birthday := birthdaysCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+
+	BirthdayModel := &BirthdayStruct{}
+	birthday.Decode(BirthdayModel)
+	convertedBirthday := BirthdayModel.asBirthdayObject()
+
+	fmt.Println(convertedBirthday)
+
 	fmt.Printf("updated %v Document/s!\n", result.ModifiedCount)
 
-	return &pb.BirthdayObject{}, nil
+	return convertedBirthday, nil
 }
 
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
@@ -182,7 +185,6 @@ func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequ
 
 	database := client.Database("birthdayDB")
 	birthdaysCollection := database.Collection("birthdays")
-	s.m = manager.NewManager(client.Database("birthdayDB"))
 
 	result, err := birthdaysCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 	if err != nil {

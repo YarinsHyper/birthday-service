@@ -55,7 +55,7 @@ message UpdateBirthdayRequest {
     string name = 2;
 
     //the date of birth of the person
-    int64 date = 3;
+    string date = 3;
 }
 
 message DeleteBirthdayRequest {
