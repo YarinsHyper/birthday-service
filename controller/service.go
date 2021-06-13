@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"log"
 
+	mongoConnect "github.com/yarinBenisty/birthday-service/mongoDB"
 	pb "github.com/yarinBenisty/birthday-service/proto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type Service struct {
 	Database           *mongo.Database
-	PodcastsCollection *mongo.Collection
+	BirthdayCollection *mongo.Collection
 }
 
 type BirthdayStruct struct {
@@ -26,29 +26,7 @@ type BirthdayStruct struct {
 
 func NewService(url string) *Service {
 	s := &Service{}
-	s.mongoConnection(url)
 	return s
-}
-
-func (s *Service) mongoConnection(url string) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(url))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx := context.Background()
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	s.Database = client.Database("birthdayDB")
-	s.PodcastsCollection = s.Database.Collection("birthdays")
 }
 
 func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
@@ -62,23 +40,8 @@ func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
 }
 
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
+	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database := client.Database("birthdayDB")
-	birthdayCollection := database.Collection("birthdays")
 	b := bson.M{
 		"name":           req.Name,
 		"date":           req.Date,
@@ -101,25 +64,9 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 }
 
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
+	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database := client.Database("birthdayDB")
-	birthdaysCollection := database.Collection("birthdays")
-	birthday := birthdaysCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
-
+	birthday := birthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 	BirthdayModel := &BirthdayStruct{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
@@ -128,39 +75,21 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 }
 
 func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequest) (*pb.BirthdayObject, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database := client.Database("birthdayDB")
-	birthdaysCollection := database.Collection("birthdays")
+	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"personalNumber", req.PersonalNumber}}
 	update := bson.D{{"$set", bson.D{{"name", req.Name}, {"date", req.Date}, {"personalNumber", req.PersonalNumber}}}}
-	result, err := birthdaysCollection.UpdateOne(context.TODO(), filter, update, opts)
+	result, err := birthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	birthday := birthdaysCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	birthday := birthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 
 	BirthdayModel := &BirthdayStruct{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
-
-	fmt.Println(convertedBirthday)
 
 	fmt.Printf("updated %v Document/s!\n", result.ModifiedCount)
 
@@ -168,25 +97,9 @@ func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequ
 }
 
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
+	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	database := client.Database("birthdayDB")
-	birthdaysCollection := database.Collection("birthdays")
-
-	result, err := birthdaysCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	result, err := birthdayCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 	if err != nil {
 		log.Fatal(err)
 	}

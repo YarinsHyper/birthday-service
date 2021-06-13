@@ -24,6 +24,7 @@ func main() {
 	// connecting to mongodb
 	bdService := controller.NewService(addr)
 	pb.RegisterBirthdayFunctionsServer(grpcServer, bdService)
+	fmt.Println("Successfully connected to mongo!\n")
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to start grpc server over port 8000: %v", err)
