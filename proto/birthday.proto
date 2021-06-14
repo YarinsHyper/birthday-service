@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option go_package = "github.com/yarinBenisty/birthday-service/proto/birthday.proto";
+
+package birthday;
+
+
+enum Requests {
+    POST = 0;
+    GET = 1;
+    PUT = 2;
+    DELETE = 3;
+}
+
+service BirthdayFunctions {
+    // CreateBirthday creates a new birthday and returns it.
+    rpc CreateBirthday(CreateBirthdayRequest) returns (BirthdayObject) {}
+
+    // GetBirthday returns the selected birthday.
+    rpc GetBirthday(GetBirthdayRequest) returns (BirthdayObject) {}
+
+    //UpdateBirthday updates the selected birthday (overrides the birthday info)
+    rpc UpdateBirthday(UpdateBirthdayRequest) returns (BirthdayObject) {}
+
+    //DeleteBirthday deletes the selected birthday.
+    rpc DeleteBirthday(DeleteBirthdayRequest) returns (DeleteBirthdayResponse) {}
+
+}
+
+message CreateBirthdayRequest {
+    //the name of the person
+    string name = 1;
+
+    //the date of birth of the person
+    string date = 2;
+
+    //the identification number of the person
+    string personalNumber = 3;
+}
+
+message DeleteBirthdayResponse{
+
+}
+
+message GetBirthdayRequest {
+    //the identification number of the person
+    string personalNumber = 1;
+}
+
+message UpdateBirthdayRequest {
+    //the identification number of the person
+    string personalNumber = 1;
+
+    //the name of the person
+    string name = 2;
+
+    //the date of birth of the person
+    string date = 3;
+}
+
+message DeleteBirthdayRequest {
+    //the identification number of the person
+    string personalNumber = 1;
+}
+
+message BirthdayObject {
+    //the name of the person
+    string name = 1;
+
+    //the date of birth of the person
+    string date = 2;
+
+    //the identification number of the person
+    string personalNumber = 3;
+
+    //the unique id that's created for the person
+    string ID = 4;
+}
