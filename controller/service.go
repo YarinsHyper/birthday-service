@@ -74,6 +74,17 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	return convertedBirthday, nil
 }
 
+func (s *Service) GetAllBirthday(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.BirthdayObject, error) {
+	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
+
+	birthday := birthdayCollection.FindOne(ctx, bson.M{})
+	BirthdayModel := &BirthdayStruct{}
+	birthday.Decode(BirthdayModel)
+	convertedBirthdays := BirthdayModel.asBirthdayObject()
+
+	return convertedBirthdays, nil
+}
+
 func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequest) (*pb.BirthdayObject, error) {
 	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 

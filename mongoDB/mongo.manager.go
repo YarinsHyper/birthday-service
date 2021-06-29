@@ -11,6 +11,8 @@ import (
 
 var CNX = Connection()
 
+
+
 func Connection() *mongo.Client {
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017")
