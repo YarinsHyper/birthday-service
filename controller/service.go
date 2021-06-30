@@ -12,14 +12,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//Service is a type of every method
+const (
+	birthdayDatabase   = "birthdayDB"
+	birthdayCollection = "birthdays"
+)
+
+// Service is a type of every method
 type Service struct {
 	Database           *mongo.Database
 	BirthdayCollection *mongo.Collection
 	pb.UnimplementedBirthdayFunctionsServer
 }
 
-//BirthdayModel is a model for coverting an object for type: birthdayObject
+// BirthdayModel is a model for coverting an object for type: birthdayObject
 type BirthdayModel struct {
 	Name           string
 	Date           string
@@ -27,14 +32,15 @@ type BirthdayModel struct {
 	ID             string `bson:"_id" json:"id,omitempty"`
 }
 
-//NewService is used each time i create a method
+// NewService is used each time i create a method
 func NewService(url string) *Service {
 	s := &Service{}
-	s.BirthdayCollection = mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
+	s.BirthdayCollection = mongoConnect.CNX.Database(birthdayDatabase).Collection(birthdayCollection)
 
 	return s
 }
 
+// asBirthdayObject is making any object type to: BirthdayObject type
 func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 	birthdayO := &pb.BirthdayObject{
 		Name:           bs.Name,
@@ -45,7 +51,7 @@ func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 	return birthdayO
 }
 
-//CreateBirthday is creating a birthday object
+// CreateBirthday is creating a birthday object
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
 
 	b := bson.M{
@@ -64,12 +70,11 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 	birthday.Decode(BirthdayModel)
 
 	convertedBirthday := BirthdayModel.asBirthdayObject()
-	fmt.Println(convertedBirthday)
 
 	return convertedBirthday, nil
 }
 
-//GetBirthday is getting a birthday object
+// GetBirthday is getting a birthday object by personalNumber parameter
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
 
 	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
@@ -80,8 +85,8 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	return convertedBirthday, nil
 }
 
-//GetAllBirthday is creating all birthday objects
-func (s *Service) GetAllBirthday(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.GetAllBirthdayResponse, error) {
+// GetAllBirthdays is creating all birthday objects
+func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.GetAllBirthdayResponse, error) {
 
 	cursor, err := s.BirthdayCollection.Find(ctx, bson.M{})
 	if err != nil {
@@ -93,13 +98,13 @@ func (s *Service) GetAllBirthday(ctx context.Context, req *pb.GetAllBirthdayRequ
 	}
 	birthdaysArray := make([]*pb.BirthdayObject, 0, len(mongoBirthdays))
 
+	// This for loops inside the mongoBirthdays, retrieves each one
+	// and appends it to a new birthdaysArray by a new type.
 	for index := 0; index < len(mongoBirthdays); index++ {
 
 		birthday := mongoBirthdays[index]
 		convertedBirthday := birthday.asBirthdayObject()
 		birthdaysArray = append(birthdaysArray, convertedBirthday)
-
-		fmt.Println(convertedBirthday)
 	}
 
 	return &pb.GetAllBirthdayResponse{Birthdays: birthdaysArray}, nil
