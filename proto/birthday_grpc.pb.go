@@ -22,9 +22,11 @@ type BirthdayFunctionsClient interface {
 	CreateBirthday(ctx context.Context, in *CreateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	// GetBirthday returns the selected birthday.
 	GetBirthday(ctx context.Context, in *GetBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
-	//UpdateBirthday updates the selected birthday (overrides the birthday info)
+	// GetBirthday returns all birthdays.
+	GetAllBirthday(ctx context.Context, in *GetAllBirthdayRequest, opts ...grpc.CallOption) (*GetAllBirthdayResponse, error)
+	// UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(ctx context.Context, in *UpdateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
-	//DeleteBirthday deletes the selected birthday.
+	// DeleteBirthday deletes the selected birthday.
 	DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*DeleteBirthdayResponse, error)
 }
 
@@ -48,6 +50,15 @@ func (c *birthdayFunctionsClient) CreateBirthday(ctx context.Context, in *Create
 func (c *birthdayFunctionsClient) GetBirthday(ctx context.Context, in *GetBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error) {
 	out := new(BirthdayObject)
 	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/GetBirthday", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *birthdayFunctionsClient) GetAllBirthday(ctx context.Context, in *GetAllBirthdayRequest, opts ...grpc.CallOption) (*GetAllBirthdayResponse, error) {
+	out := new(GetAllBirthdayResponse)
+	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/GetAllBirthday", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,11 +91,13 @@ type BirthdayFunctionsServer interface {
 	CreateBirthday(context.Context, *CreateBirthdayRequest) (*BirthdayObject, error)
 	// GetBirthday returns the selected birthday.
 	GetBirthday(context.Context, *GetBirthdayRequest) (*BirthdayObject, error)
-	//UpdateBirthday updates the selected birthday (overrides the birthday info)
+	// GetBirthday returns all birthdays.
+	GetAllBirthday(context.Context, *GetAllBirthdayRequest) (*GetAllBirthdayResponse, error)
+	// UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error)
-	//DeleteBirthday deletes the selected birthday.
+	// DeleteBirthday deletes the selected birthday.
 	DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error)
-	// mustEmbedUnimplementedBirthdayFunctionsServer()
+	mustEmbedUnimplementedBirthdayFunctionsServer()
 }
 
 // UnimplementedBirthdayFunctionsServer must be embedded to have forward compatible implementations.
@@ -97,20 +110,23 @@ func (UnimplementedBirthdayFunctionsServer) CreateBirthday(context.Context, *Cre
 func (UnimplementedBirthdayFunctionsServer) GetBirthday(context.Context, *GetBirthdayRequest) (*BirthdayObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBirthday not implemented")
 }
+func (UnimplementedBirthdayFunctionsServer) GetAllBirthday(context.Context, *GetAllBirthdayRequest) (*GetAllBirthdayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllBirthday not implemented")
+}
 func (UnimplementedBirthdayFunctionsServer) UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBirthday not implemented")
 }
 func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBirthday not implemented")
 }
+func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
 
-// func (UnimplementedBirthdayFunctionsServer) mustEmbedUnimplementedBirthdayFunctionsServer() {}
 // UnsafeBirthdayFunctionsServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to BirthdayFunctionsServer will
 // result in compilation errors.
-// type UnsafeBirthdayFunctionsServer interface {
-// 	mustEmbedUnimplementedBirthdayFunctionsServer()
-// }
+type UnsafeBirthdayFunctionsServer interface {
+	mustEmbedUnimplementedBirthdayFunctionsServer()
+}
 
 func RegisterBirthdayFunctionsServer(s grpc.ServiceRegistrar, srv BirthdayFunctionsServer) {
 	s.RegisterService(&BirthdayFunctions_ServiceDesc, srv)
@@ -148,6 +164,24 @@ func _BirthdayFunctions_GetBirthday_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BirthdayFunctionsServer).GetBirthday(ctx, req.(*GetBirthdayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BirthdayFunctions_GetAllBirthday_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllBirthdayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BirthdayFunctionsServer).GetAllBirthday(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/birthday.BirthdayFunctions/GetAllBirthday",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BirthdayFunctionsServer).GetAllBirthday(ctx, req.(*GetAllBirthdayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -204,6 +238,10 @@ var BirthdayFunctions_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BirthdayFunctions_GetBirthday_Handler,
 		},
 		{
+			MethodName: "GetAllBirthday",
+			Handler:    _BirthdayFunctions_GetAllBirthday_Handler,
+		},
+		{
 			MethodName: "UpdateBirthday",
 			Handler:    _BirthdayFunctions_UpdateBirthday_Handler,
 		},
@@ -213,5 +251,5 @@ var BirthdayFunctions_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "birthday.proto",
+	Metadata: "proto/birthday.proto",
 }
