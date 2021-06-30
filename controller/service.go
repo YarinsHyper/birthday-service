@@ -12,24 +12,30 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//Service is a type of every method
 type Service struct {
 	Database           *mongo.Database
 	BirthdayCollection *mongo.Collection
+	pb.UnimplementedBirthdayFunctionsServer
 }
 
-type BirthdayStruct struct {
+//BirthdayModel is a model for coverting an object for type: birthdayObject
+type BirthdayModel struct {
 	Name           string
 	Date           string
 	PersonalNumber string
 	ID             string `bson:"_id" json:"id,omitempty"`
 }
 
+//NewService is used each time i create a method
 func NewService(url string) *Service {
 	s := &Service{}
+	s.BirthdayCollection = mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
+
 	return s
 }
 
-func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
+func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 	birthdayO := &pb.BirthdayObject{
 		Name:           bs.Name,
 		Date:           bs.Date,
@@ -39,8 +45,8 @@ func (bs *BirthdayStruct) asBirthdayObject() *pb.BirthdayObject {
 	return birthdayO
 }
 
+//CreateBirthday is creating a birthday object
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
-	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
 	b := bson.M{
 		"name":           req.Name,
@@ -48,13 +54,13 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 		"personalNumber": req.PersonalNumber,
 	}
 
-	cursor, err := birthdayCollection.InsertOne(ctx, b)
+	cursor, err := s.BirthdayCollection.InsertOne(ctx, b)
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
 
-	birthday := birthdayCollection.FindOne(ctx, bson.M{"_id": cursor.InsertedID})
-	BirthdayModel := &BirthdayStruct{}
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"_id": cursor.InsertedID})
+	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
 
 	convertedBirthday := BirthdayModel.asBirthdayObject()
@@ -63,42 +69,56 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 	return convertedBirthday, nil
 }
 
+//GetBirthday is getting a birthday object
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
-	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
-	birthday := birthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
-	BirthdayModel := &BirthdayStruct{}
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
 
 	return convertedBirthday, nil
 }
 
-func (s *Service) GetAllBirthday(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.BirthdayObject, error) {
-	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
+//GetAllBirthday is creating all birthday objects
+func (s *Service) GetAllBirthday(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.GetAllBirthdayResponse, error) {
 
-	birthday := birthdayCollection.FindOne(ctx, bson.M{})
-	BirthdayModel := &BirthdayStruct{}
-	birthday.Decode(BirthdayModel)
-	convertedBirthdays := BirthdayModel.asBirthdayObject()
+	cursor, err := s.BirthdayCollection.Find(ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	var mongoBirthdays []BirthdayModel
+	if err = cursor.All(ctx, &mongoBirthdays); err != nil {
+		log.Fatal(err)
+	}
+	birthdaysArray := make([]*pb.BirthdayObject, 0, len(mongoBirthdays))
 
-	return convertedBirthdays, nil
+	for index := 0; index < len(mongoBirthdays); index++ {
+
+		birthday := mongoBirthdays[index]
+		convertedBirthday := birthday.asBirthdayObject()
+		birthdaysArray = append(birthdaysArray, convertedBirthday)
+
+		fmt.Println(convertedBirthday)
+	}
+
+	return &pb.GetAllBirthdayResponse{Birthdays: birthdaysArray}, nil
 }
 
+// UpdateBirthday is updating a birthday object
 func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequest) (*pb.BirthdayObject, error) {
-	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{"personalNumber", req.PersonalNumber}}
-	update := bson.D{{"$set", bson.D{{"name", req.Name}, {"date", req.Date}, {"personalNumber", req.PersonalNumber}}}}
-	result, err := birthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
+	filter := bson.D{{Key: "personalNumber", Value: req.PersonalNumber}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "name", Value: req.Name}, {Key: "date", Value: req.Date}, {Key: "personalNumber", Value: req.PersonalNumber}}}}
+	result, err := s.BirthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	birthday := birthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 
-	BirthdayModel := &BirthdayStruct{}
+	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
 
@@ -107,10 +127,10 @@ func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequ
 	return convertedBirthday, nil
 }
 
+// DeleteBirthday is deleting a birthday object
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
-	birthdayCollection := mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
-	result, err := birthdayCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -12,7 +12,7 @@ service BirthdayFunctions {
   rpc GetBirthday(GetBirthdayRequest) returns (BirthdayObject) {}
 
   // GetBirthday returns all birthdays.
-  rpc GetAllBirthday(GetAllBirthdayRequest) returns (BirthdayObject) {}
+  rpc GetAllBirthday(GetAllBirthdayRequest) returns (GetAllBirthdayResponse) {}
 
   // UpdateBirthday updates the selected birthday (overrides the birthday info)
   rpc UpdateBirthday(UpdateBirthdayRequest) returns (BirthdayObject) {}
@@ -69,4 +69,8 @@ message BirthdayObject {
 
   // the unique id that's created for the person
   string ID = 4;
+}
+
+message GetAllBirthdayResponse { 
+  repeated BirthdayObject birthdays = 1;
 }
