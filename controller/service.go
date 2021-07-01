@@ -13,8 +13,11 @@ import (
 )
 
 const (
-	birthdayDatabase   = "birthdayDB"
-	birthdayCollection = "birthdays"
+	birthdayDatabase        = "birthdayDB"
+	birthdayCollection      = "birthdays"
+	personalNumberParameter = "personalNumber"
+	dateParameter           = "date"
+	nameParameter           = "name"
 )
 
 // Service is a type of every method
@@ -55,9 +58,9 @@ func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
 
 	b := bson.M{
-		"name":           req.Name,
-		"date":           req.Date,
-		"personalNumber": req.PersonalNumber,
+		nameParameter:           req.Name,
+		dateParameter:           req.Date,
+		personalNumberParameter: req.PersonalNumber,
 	}
 
 	cursor, err := s.BirthdayCollection.InsertOne(ctx, b)
@@ -77,7 +80,7 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 // GetBirthday is getting a birthday object by personalNumber parameter
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
 
-	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
 	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
@@ -114,14 +117,14 @@ func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdayReq
 func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequest) (*pb.BirthdayObject, error) {
 
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{Key: "personalNumber", Value: req.PersonalNumber}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "name", Value: req.Name}, {Key: "date", Value: req.Date}, {Key: "personalNumber", Value: req.PersonalNumber}}}}
+	filter := bson.D{{Key: personalNumberParameter, Value: req.PersonalNumber}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: nameParameter, Value: req.Name}, {Key: nameParameter, Value: req.Date}, {Key: personalNumberParameter, Value: req.PersonalNumber}}}}
 	result, err := s.BirthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
 
 	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
@@ -135,7 +138,7 @@ func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequ
 // DeleteBirthday is deleting a birthday object
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
 
-	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{"personalNumber": req.PersonalNumber})
+	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
 	if err != nil {
 		log.Fatal(err)
 	}
