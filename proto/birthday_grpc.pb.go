@@ -20,10 +20,10 @@ const _ = grpc.SupportPackageIsVersion7
 type BirthdayFunctionsClient interface {
 	// CreateBirthday creates a new birthday and returns it.
 	CreateBirthday(ctx context.Context, in *CreateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
-	// GetBirthday returns the selected birthday.
+	// GetBirthday returns the selected birthday using personalNumber parameter.
 	GetBirthday(ctx context.Context, in *GetBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
-	// GetBirthday returns all birthdays.
-	GetAllBirthday(ctx context.Context, in *GetAllBirthdayRequest, opts ...grpc.CallOption) (*GetAllBirthdayResponse, error)
+	// GetAllBirthday returns all birthdays.
+	GetAllBirthdays(ctx context.Context, in *GetAllBirthdaysRequest, opts ...grpc.CallOption) (*GetAllBirthdaysResponse, error)
 	// UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(ctx context.Context, in *UpdateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	// DeleteBirthday deletes the selected birthday.
@@ -56,9 +56,9 @@ func (c *birthdayFunctionsClient) GetBirthday(ctx context.Context, in *GetBirthd
 	return out, nil
 }
 
-func (c *birthdayFunctionsClient) GetAllBirthday(ctx context.Context, in *GetAllBirthdayRequest, opts ...grpc.CallOption) (*GetAllBirthdayResponse, error) {
-	out := new(GetAllBirthdayResponse)
-	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/GetAllBirthday", in, out, opts...)
+func (c *birthdayFunctionsClient) GetAllBirthdays(ctx context.Context, in *GetAllBirthdaysRequest, opts ...grpc.CallOption) (*GetAllBirthdaysResponse, error) {
+	out := new(GetAllBirthdaysResponse)
+	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/GetAllBirthdays", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,10 +89,10 @@ func (c *birthdayFunctionsClient) DeleteBirthday(ctx context.Context, in *Delete
 type BirthdayFunctionsServer interface {
 	// CreateBirthday creates a new birthday and returns it.
 	CreateBirthday(context.Context, *CreateBirthdayRequest) (*BirthdayObject, error)
-	// GetBirthday returns the selected birthday.
+	// GetBirthday returns the selected birthday using personalNumber parameter.
 	GetBirthday(context.Context, *GetBirthdayRequest) (*BirthdayObject, error)
-	// GetBirthday returns all birthdays.
-	GetAllBirthday(context.Context, *GetAllBirthdayRequest) (*GetAllBirthdayResponse, error)
+	// GetAllBirthday returns all birthdays.
+	GetAllBirthdays(context.Context, *GetAllBirthdaysRequest) (*GetAllBirthdaysResponse, error)
 	// UpdateBirthday updates the selected birthday (overrides the birthday info)
 	UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error)
 	// DeleteBirthday deletes the selected birthday.
@@ -110,8 +110,8 @@ func (UnimplementedBirthdayFunctionsServer) CreateBirthday(context.Context, *Cre
 func (UnimplementedBirthdayFunctionsServer) GetBirthday(context.Context, *GetBirthdayRequest) (*BirthdayObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBirthday not implemented")
 }
-func (UnimplementedBirthdayFunctionsServer) GetAllBirthday(context.Context, *GetAllBirthdayRequest) (*GetAllBirthdayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllBirthday not implemented")
+func (UnimplementedBirthdayFunctionsServer) GetAllBirthdays(context.Context, *GetAllBirthdaysRequest) (*GetAllBirthdaysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllBirthdays not implemented")
 }
 func (UnimplementedBirthdayFunctionsServer) UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBirthday not implemented")
@@ -168,20 +168,20 @@ func _BirthdayFunctions_GetBirthday_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BirthdayFunctions_GetAllBirthday_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllBirthdayRequest)
+func _BirthdayFunctions_GetAllBirthdays_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllBirthdaysRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BirthdayFunctionsServer).GetAllBirthday(ctx, in)
+		return srv.(BirthdayFunctionsServer).GetAllBirthdays(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/birthday.BirthdayFunctions/GetAllBirthday",
+		FullMethod: "/birthday.BirthdayFunctions/GetAllBirthdays",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BirthdayFunctionsServer).GetAllBirthday(ctx, req.(*GetAllBirthdayRequest))
+		return srv.(BirthdayFunctionsServer).GetAllBirthdays(ctx, req.(*GetAllBirthdaysRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -238,8 +238,8 @@ var BirthdayFunctions_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BirthdayFunctions_GetBirthday_Handler,
 		},
 		{
-			MethodName: "GetAllBirthday",
-			Handler:    _BirthdayFunctions_GetAllBirthday_Handler,
+			MethodName: "GetAllBirthdays",
+			Handler:    _BirthdayFunctions_GetAllBirthdays_Handler,
 		},
 		{
 			MethodName: "UpdateBirthday",

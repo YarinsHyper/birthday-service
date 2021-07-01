@@ -38,7 +38,8 @@ type BirthdayModel struct {
 // NewService is used each time i create a method
 func NewService(url string) *Service {
 	s := &Service{}
-	s.BirthdayCollection = mongoConnect.CNX.Database(birthdayDatabase).Collection(birthdayCollection)
+	// s.BirthdayCollection = mongoConnect.CNX.Database(birthdayDatabase).Collection(birthdayCollection)
+	s.BirthdayCollection = mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
 
 	return s
 }
@@ -89,7 +90,7 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 }
 
 // GetAllBirthdays is creating all birthday objects
-func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdayRequest) (*pb.GetAllBirthdayResponse, error) {
+func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdaysRequest) (*pb.GetAllBirthdaysResponse, error) {
 
 	cursor, err := s.BirthdayCollection.Find(ctx, bson.M{})
 	if err != nil {
@@ -108,9 +109,12 @@ func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdayReq
 		birthday := mongoBirthdays[index]
 		convertedBirthday := birthday.asBirthdayObject()
 		birthdaysArray = append(birthdaysArray, convertedBirthday)
+
+		fmt.Println(convertedBirthday)
+
 	}
 
-	return &pb.GetAllBirthdayResponse{Birthdays: birthdaysArray}, nil
+	return &pb.GetAllBirthdaysResponse{Birthdays: birthdaysArray}, nil
 }
 
 // UpdateBirthday is updating a birthday object
