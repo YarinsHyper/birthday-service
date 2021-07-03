@@ -66,7 +66,7 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 
 	cursor, err := s.BirthdayCollection.InsertOne(ctx, b)
 	if err != nil {
-		fmt.Println("error: ", err)
+		log.Fatal(err)
 	}
 
 	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"_id": cursor.InsertedID})
@@ -109,9 +109,6 @@ func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdaysRe
 		birthday := mongoBirthdays[index]
 		convertedBirthday := birthday.asBirthdayObject()
 		birthdaysArray = append(birthdaysArray, convertedBirthday)
-
-		fmt.Println(convertedBirthday)
-
 	}
 
 	return &pb.GetAllBirthdaysResponse{Birthdays: birthdaysArray}, nil
