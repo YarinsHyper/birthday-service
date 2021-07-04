@@ -18,10 +18,6 @@ var CNX = Connection()
 func Connection() *mongo.Client {
 
 	// loading the dotenv parameters
-	// envErr := godotenv.Load()
-	// if envErr != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
 	config, err := util.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
