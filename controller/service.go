@@ -20,7 +20,8 @@ const (
 	nameParameter           = "name"
 )
 
-// Service is a type of every method
+// Service is a type that every method uses to get
+// all the info needed in order to work properly
 type Service struct {
 	Database           *mongo.Database
 	BirthdayCollection *mongo.Collection
@@ -35,7 +36,7 @@ type BirthdayModel struct {
 	ID             string `bson:"_id" json:"id,omitempty"`
 }
 
-// NewService is used each time i create a method
+// NewService creaes a new service and returns is
 func NewService(url string) *Service {
 	s := &Service{}
 	// s.BirthdayCollection = mongoConnect.CNX.Database(birthdayDatabase).Collection(birthdayCollection)
@@ -44,7 +45,7 @@ func NewService(url string) *Service {
 	return s
 }
 
-// asBirthdayObject is making any object type to: BirthdayObject type
+// asBirthdayObject converts BirthdayModel type to: BirthdayObject type
 func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 	birthdayO := &pb.BirthdayObject{
 		Name:           bs.Name,
@@ -78,7 +79,7 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 	return convertedBirthday, nil
 }
 
-// GetBirthday is getting a birthday object by personalNumber parameter
+// GetBirthday returns a birthday object by personalNumber
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
 
 	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
@@ -89,7 +90,7 @@ func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (
 	return convertedBirthday, nil
 }
 
-// GetAllBirthdays is creating all birthday objects
+// GetAllBirthdays returns all birthday objects in the DB
 func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdaysRequest) (*pb.GetAllBirthdaysResponse, error) {
 
 	cursor, err := s.BirthdayCollection.Find(ctx, bson.M{})
@@ -136,7 +137,7 @@ func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequ
 	return convertedBirthday, nil
 }
 
-// DeleteBirthday is deleting a birthday object
+// DeleteBirthday deletes a birthday object by it's personalNumber
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
 
 	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})

@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/yarinBenisty/birthday-service/util"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -19,13 +18,17 @@ var CNX = Connection()
 func Connection() *mongo.Client {
 
 	// loading the dotenv parameters
-	envErr := godotenv.Load()
-	if envErr != nil {
-		log.Fatal("Error loading .env file")
+	// envErr := godotenv.Load()
+	// if envErr != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
 	}
 
 	// Set client options
-	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
+	clientOptions := options.Client().ApplyURI(config.MongoURL)
 
 	// Connect to mongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
