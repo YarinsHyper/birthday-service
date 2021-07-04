@@ -1,19 +1,30 @@
-package mongoManager
+package mongomanager
 
 import (
 	"context"
 	"fmt"
 	"log"
 
+	"github.com/yarinBenisty/birthday-service/util"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//CNX is a mongo client
 var CNX = Connection()
 
+//Connection is a function that creates a mongo client and
+//connects it to the db and pings/checks the connection
 func Connection() *mongo.Client {
+
+	// loading the dotenv parameters
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://root:example@0.0.0.0:27017")
+	clientOptions := options.Client().ApplyURI(config.MongoURL)
 
 	// Connect to mongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
