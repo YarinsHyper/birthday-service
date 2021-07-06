@@ -13,11 +13,16 @@ import (
 )
 
 const (
-	birthdayDatabase        = "birthdayDB"
-	birthdayCollection      = "birthdays"
-	personalNumberParameter = "personalNumber"
-	dateParameter           = "date"
-	nameParameter           = "name"
+	// BirthdayDatabase DB name
+	BirthdayDatabase = "birthdayDB"
+	// BirthdayCollection collection name
+	BirthdayCollection = "birthdays"
+	// PersonalNumberParameter object parameter
+	PersonalNumberParameter = "personalNumber"
+	// DateParameter object parameter
+	DateParameter = "date"
+	// NameParameter object parameter
+	NameParameter = "name"
 )
 
 // Service is a type that every method uses to get
@@ -39,8 +44,7 @@ type BirthdayModel struct {
 // NewService creaes a new service and returns is
 func NewService(url string) *Service {
 	s := &Service{}
-	// s.BirthdayCollection = mongoConnect.CNX.Database(birthdayDatabase).Collection(birthdayCollection)
-	s.BirthdayCollection = mongoConnect.CNX.Database("birthdayDB").Collection("birthdays")
+	s.BirthdayCollection = mongoConnect.CNX.Database(BirthdayDatabase).Collection(BirthdayCollection)
 
 	return s
 }
@@ -56,25 +60,24 @@ func (bs *BirthdayModel) asBirthdayObject() *pb.BirthdayObject {
 	return birthdayO
 }
 
-// CreateBirthday is creating a birthday object
+// CreateBirthday is UPSERTING which means: if the given object
+// exists its being overridden, if it doesn't its inserting the object
 func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequest) (*pb.BirthdayObject, error) {
 
-	b := bson.M{
-		nameParameter:           req.Name,
-		dateParameter:           req.Date,
-		personalNumberParameter: req.PersonalNumber,
-	}
-
-	cursor, err := s.BirthdayCollection.InsertOne(ctx, b)
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{Key: PersonalNumberParameter, Value: req.PersonalNumber}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: NameParameter, Value: req.Name}, {Key: DateParameter, Value: req.Date}, {Key: PersonalNumberParameter, Value: req.PersonalNumber}}}}
+	result, err := s.BirthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{"_id": cursor.InsertedID})
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{PersonalNumberParameter: req.PersonalNumber})
 	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
-
 	convertedBirthday := BirthdayModel.asBirthdayObject()
+
+	fmt.Printf("changed %v Document/s!\n", result.ModifiedCount)
 
 	return convertedBirthday, nil
 }
@@ -82,7 +85,7 @@ func (s *Service) CreateBirthday(ctx context.Context, req *pb.CreateBirthdayRequ
 // GetBirthday returns a birthday object by personalNumber
 func (s *Service) GetBirthday(ctx context.Context, req *pb.GetBirthdayRequest) (*pb.BirthdayObject, error) {
 
-	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
+	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{PersonalNumberParameter: req.PersonalNumber})
 	BirthdayModel := &BirthdayModel{}
 	birthday.Decode(BirthdayModel)
 	convertedBirthday := BirthdayModel.asBirthdayObject()
@@ -115,37 +118,15 @@ func (s *Service) GetAllBirthdays(ctx context.Context, req *pb.GetAllBirthdaysRe
 	return &pb.GetAllBirthdaysResponse{Birthdays: birthdaysArray}, nil
 }
 
-// UpdateBirthday is updating a birthday object
-func (s *Service) UpdateBirthday(ctx context.Context, req *pb.UpdateBirthdayRequest) (*pb.BirthdayObject, error) {
-
-	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{Key: personalNumberParameter, Value: req.PersonalNumber}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: nameParameter, Value: req.Name}, {Key: nameParameter, Value: req.Date}, {Key: personalNumberParameter, Value: req.PersonalNumber}}}}
-	result, err := s.BirthdayCollection.UpdateOne(context.TODO(), filter, update, opts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	birthday := s.BirthdayCollection.FindOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
-
-	BirthdayModel := &BirthdayModel{}
-	birthday.Decode(BirthdayModel)
-	convertedBirthday := BirthdayModel.asBirthdayObject()
-
-	fmt.Printf("updated %v Document/s!\n", result.ModifiedCount)
-
-	return convertedBirthday, nil
-}
-
 // DeleteBirthday deletes a birthday object by it's personalNumber
 func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequest) (*pb.DeleteBirthdayResponse, error) {
 
-	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{personalNumberParameter: req.PersonalNumber})
+	result, err := s.BirthdayCollection.DeleteOne(ctx, bson.M{PersonalNumberParameter: req.PersonalNumber})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("DeleteOne removed %v birthday(s)\n", result.DeletedCount)
+	fmt.Printf("removed %v document/s\n", result.DeletedCount)
 
 	return &pb.DeleteBirthdayResponse{}, nil
 }
