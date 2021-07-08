@@ -1,0 +1,28 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - "./mongoDB/data:/data/db"
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+  
+  # birthday-service:
+  #   container_name: birthday-service
+  #   build: .
+  #   environment: 
+  #     - MONGO_URL="mongodb://root:example@0.0.0.0:27017"
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on: 
+  #     - mongo
