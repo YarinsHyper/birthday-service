@@ -1,12 +1,17 @@
-FROM golang:alpine
-# Set the Current Working Directory inside the container
-WORKDIR /app
-# Copy everything from the current directory to the PWD (Present Working Directory) inside the container
+#build stage
+FROM golang:alpine AS builder
+ENV GO111MODULE=on
+RUN apk add --no-cache git make
+WORKDIR /go/src/app
 COPY go.mod go.sum ./
-RUN go mod Download
-# Download all the dependencies
-RUN go get -d -v ./...
-RUN go install -v ./...
-# This container exposes port 8080 to the outside world
+RUN go mod download
+COPY . .
+RUN make build
+
+#final stage
+FROM golang:alpine
+COPY --from=builder /go/src/app/birthday-service /birthday-service
+LABEL Name=birthday-service Version=0.0.1
+WORKDIR /go/src/app
 EXPOSE 8000
-CMD ["/birthday-service"]
+ENTRYPOINT ["/birthday-service"]
