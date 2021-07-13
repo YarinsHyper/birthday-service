@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/viper"
 	"github.com/yarinBenisty/birthday-service/util"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,13 +19,13 @@ var CNX = Connection()
 func Connection() *mongo.Client {
 
 	// loading the dotenv parameters
-	config, err := util.LoadConfig(".")
+	err := util.LoadConfig()
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
 
 	// Set client options
-	clientOptions := options.Client().ApplyURI(config.MongoURL)
+	clientOptions := options.Client().ApplyURI(viper.GetString(util.ConfigMongoConnectionString))
 
 	// Connect to mongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
