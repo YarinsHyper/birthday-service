@@ -9,9 +9,9 @@ COPY . .
 RUN make build
 
 #final stage
-FROM golang:alpine
+FROM scratch
 COPY --from=builder /go/src/app/birthday-service /birthday-service
+COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
 LABEL Name=birthday-service Version=0.0.1
-WORKDIR /go/src/app
 EXPOSE 8000
 ENTRYPOINT ["/birthday-service"]
