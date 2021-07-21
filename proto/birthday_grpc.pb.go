@@ -18,14 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BirthdayFunctionsClient interface {
-	// CreateBirthday creates a new birthday and returns it.
+	// CreateBirthday creates a new birthday if it doesn't exist.
+	// and if it does, its overwriting it
 	CreateBirthday(ctx context.Context, in *CreateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	// GetBirthday returns the selected birthday using personalNumber parameter.
 	GetBirthday(ctx context.Context, in *GetBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	// GetAllBirthday returns all birthdays.
 	GetAllBirthdays(ctx context.Context, in *GetAllBirthdaysRequest, opts ...grpc.CallOption) (*GetAllBirthdaysResponse, error)
-	// UpdateBirthday updates the selected birthday (overrides the birthday info)
-	UpdateBirthday(ctx context.Context, in *UpdateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error)
 	// DeleteBirthday deletes the selected birthday.
 	DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*DeleteBirthdayResponse, error)
 }
@@ -65,15 +64,6 @@ func (c *birthdayFunctionsClient) GetAllBirthdays(ctx context.Context, in *GetAl
 	return out, nil
 }
 
-func (c *birthdayFunctionsClient) UpdateBirthday(ctx context.Context, in *UpdateBirthdayRequest, opts ...grpc.CallOption) (*BirthdayObject, error) {
-	out := new(BirthdayObject)
-	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/UpdateBirthday", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *birthdayFunctionsClient) DeleteBirthday(ctx context.Context, in *DeleteBirthdayRequest, opts ...grpc.CallOption) (*DeleteBirthdayResponse, error) {
 	out := new(DeleteBirthdayResponse)
 	err := c.cc.Invoke(ctx, "/birthday.BirthdayFunctions/DeleteBirthday", in, out, opts...)
@@ -87,14 +77,13 @@ func (c *birthdayFunctionsClient) DeleteBirthday(ctx context.Context, in *Delete
 // All implementations must embed UnimplementedBirthdayFunctionsServer
 // for forward compatibility
 type BirthdayFunctionsServer interface {
-	// CreateBirthday creates a new birthday and returns it.
+	// CreateBirthday creates a new birthday if it doesn't exist.
+	// and if it does, its overwriting it
 	CreateBirthday(context.Context, *CreateBirthdayRequest) (*BirthdayObject, error)
 	// GetBirthday returns the selected birthday using personalNumber parameter.
 	GetBirthday(context.Context, *GetBirthdayRequest) (*BirthdayObject, error)
 	// GetAllBirthday returns all birthdays.
 	GetAllBirthdays(context.Context, *GetAllBirthdaysRequest) (*GetAllBirthdaysResponse, error)
-	// UpdateBirthday updates the selected birthday (overrides the birthday info)
-	UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error)
 	// DeleteBirthday deletes the selected birthday.
 	DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error)
 	mustEmbedUnimplementedBirthdayFunctionsServer()
@@ -112,9 +101,6 @@ func (UnimplementedBirthdayFunctionsServer) GetBirthday(context.Context, *GetBir
 }
 func (UnimplementedBirthdayFunctionsServer) GetAllBirthdays(context.Context, *GetAllBirthdaysRequest) (*GetAllBirthdaysResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllBirthdays not implemented")
-}
-func (UnimplementedBirthdayFunctionsServer) UpdateBirthday(context.Context, *UpdateBirthdayRequest) (*BirthdayObject, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateBirthday not implemented")
 }
 func (UnimplementedBirthdayFunctionsServer) DeleteBirthday(context.Context, *DeleteBirthdayRequest) (*DeleteBirthdayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBirthday not implemented")
@@ -186,24 +172,6 @@ func _BirthdayFunctions_GetAllBirthdays_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BirthdayFunctions_UpdateBirthday_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateBirthdayRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BirthdayFunctionsServer).UpdateBirthday(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/birthday.BirthdayFunctions/UpdateBirthday",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BirthdayFunctionsServer).UpdateBirthday(ctx, req.(*UpdateBirthdayRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _BirthdayFunctions_DeleteBirthday_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteBirthdayRequest)
 	if err := dec(in); err != nil {
@@ -242,14 +210,10 @@ var BirthdayFunctions_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BirthdayFunctions_GetAllBirthdays_Handler,
 		},
 		{
-			MethodName: "UpdateBirthday",
-			Handler:    _BirthdayFunctions_UpdateBirthday_Handler,
-		},
-		{
 			MethodName: "DeleteBirthday",
 			Handler:    _BirthdayFunctions_DeleteBirthday_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/birthday.proto",
+	Metadata: "birthday.proto",
 }

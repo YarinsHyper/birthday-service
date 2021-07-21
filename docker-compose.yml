@@ -1,0 +1,22 @@
+version: "3"
+services:
+  birthday-service:
+    image: birthday-service
+    build: .
+    env_file:
+      - ./app.env
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - "./data/db:/data/db"
