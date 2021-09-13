@@ -5,8 +5,10 @@ import (
 )
 
 const (
-	// ConfigMongoConnectionString IS ..
+	// ConfigMongoConnectionString is ..
 	ConfigMongoConnectionString = "mongo_host"
+	// configHealthCheckInterval is ..
+	configHealthCheckInterval = "health_check_interval"
 )
 
 // Config is used to declare every variable in
@@ -18,6 +20,7 @@ type Config struct {
 // LoadConfig loads all variables from app.env file
 func LoadConfig() (err error) {
 	viper.SetDefault(ConfigMongoConnectionString, "mongodb://root:example@0.0.0.0:27017")
+	viper.SetDefault(configHealthCheckInterval, 3)
 	viper.AutomaticEnv()
 
 	return nil
