@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	mongoConnect "github.com/yarinBenisty/birthday-service/mongoDB"
 	pb "github.com/yarinBenisty/birthday-service/proto"
@@ -131,16 +130,4 @@ func (s *Service) DeleteBirthday(ctx context.Context, req *pb.DeleteBirthdayRequ
 	fmt.Printf("removed %v document/s\n", result.DeletedCount)
 
 	return &pb.DeleteBirthdayResponse{}, nil
-}
-
-// HealthCheck checks the health of the service, returns true if healthy, or false otherwise.
-func (s Service) HealthCheck(mongoClientPingTimeout time.Duration) bool {
-	timeoutCtx, cancel := context.WithTimeout(context.TODO(), mongoClientPingTimeout)
-	defer cancel()
-	healthy, err := s.controller.HealthCheck(timeoutCtx)
-	if err != nil {
-		return false
-	}
-
-	return healthy
 }

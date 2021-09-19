@@ -12,5 +12,4 @@ type Controller interface {
 	GetBirthday(ctx context.Context, PersonalNumber string) (*pb.BirthdayObject, error)
 	GetAllBirthdays(ctx context.Context) (*pb.GetAllBirthdaysResponse, error)
 	DeleteBirthday(ctx context.Context, PersonalNumber string) (*pb.DeleteBirthdayResponse, error)
-	HealthCheck(ctx context.Context) (bool, error)
 }
