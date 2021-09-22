@@ -14,7 +14,7 @@ import (
 // and its services and configuration.
 
 func main() {
-	addr := "mongodb://root:example@0.0.0.0:27017"
+	addr := "mongodb://168.63.40.248:27017/birthdayDB"
 
 	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {

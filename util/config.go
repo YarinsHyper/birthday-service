@@ -17,7 +17,7 @@ type Config struct {
 
 // LoadConfig loads all variables from app.env file
 func LoadConfig() (err error) {
-	viper.SetDefault(ConfigMongoConnectionString, "mongodb://root:example@0.0.0.0:27017")
+	viper.SetDefault(ConfigMongoConnectionString, "mongodb://168.63.40.248:27017/birthdayDB")
 	viper.AutomaticEnv()
 
 	return nil
